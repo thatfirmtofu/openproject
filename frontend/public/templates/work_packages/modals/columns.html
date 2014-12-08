@@ -6,14 +6,15 @@
 
     <div>
       <label for="selected_columns">{{ I18n.t('js.description_selected_columns') }}</label>
-      <input id="selected_columns_new"
-             type="hidden"
-             ui-select2-sortable="select2Options"
-             simple-query="getObjectsData"
-             ng-model="selectedColumnsData"
-             multiple
-             sortable
-             focus></input>
+
+      <ui-select multiple ng-model="selectedColumns" theme="select2" id="selected_columns_new">
+        <ui-select-match placeholder="Select columns…">
+          {{$item.title}}
+        </ui-select-match>
+        <ui-select-choices repeat="column in availableColumns | filter: { title: $select.search }">
+          <div ng-bind-html="column.title | highlight: $select.search"></div>
+        </ui-select-choices>
+      </ui-select>
     </div>
 
     <div>

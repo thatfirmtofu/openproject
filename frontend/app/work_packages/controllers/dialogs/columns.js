@@ -41,18 +41,10 @@ module.exports = function($scope, $filter, columnsModal, QueryService, WorkPacka
     return result(sorted);
   };
 
-  // Data conversion for select2
-  function convertColumnsForSelect2(columns) {
-    return columns.map(function(column){
-      return { id: column.name, label: column.title, other: column.title };
-    });
-  }
-  function getColumnIdentifiersFromSelection(selectedColumnsData) {
-    return selectedColumnsData.map(function(column) { return column.id; });
-  }
-
   // Selected Columns
   var selectedColumns = QueryService.getSelectedColumns();
+  $scope.selectedColumns = selectedColumns;
+
   var previouslySelectedColumnNames = selectedColumns
     .map(function(column){ return column.name; });
 
@@ -62,19 +54,16 @@ module.exports = function($scope, $filter, columnsModal, QueryService, WorkPacka
     });
   }
 
-  $scope.selectedColumnsData = convertColumnsForSelect2(selectedColumns);
-
   // Available selectable Columns
   QueryService.loadAvailableColumns()
     .then(function(availableColumns){
       $scope.availableColumns = availableColumns;
-      $scope.availableColumnsData = convertColumnsForSelect2(availableColumns);
     });
 
 
   $scope.updateSelectedColumns = function(){
     // Note: Can't directly manipulate selected columns because select2 returns a new array when you change the values:(
-    QueryService.setSelectedColumns(getColumnIdentifiersFromSelection($scope.selectedColumnsData));
+    //QueryService.setSelectedColumns(getColumnIdentifiersFromSelection($scope.selectedColumnsData));
 
     // Augment work packages with new columns data
     var addedColumns        = getNewlyAddedColumns(),
