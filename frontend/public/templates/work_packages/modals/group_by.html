@@ -5,12 +5,13 @@
     <h3>{{ I18n.t('js.label_group_by') }}</h3>
 
     <div>
-      <input id="selected_columns_new"
-             type="hidden"
-             ui-select2-sortable="select2Options"
-             simple-query="getGroupableColumnsData"
-             ng-model="selectedGroupByData"
-             focus></input>
+      <pre>Selected: {{selectedGroupByData | json}}</pre>
+      <ui-select ng-model="selectedGroupByData" theme="select2" focus id="selected_columns_new">
+        <ui-select-match>{{$select.selected.label}}</ui-select-match>
+        <ui-select-choices repeat="column in groupableColumnsData | filter: { label: $select.search }">
+          {{column.label}}
+        </ui-select-choices>
+      </ui-select>
     </div>
     <div>
       <button class="button -highlight" ng-click="updateGroupBy()">

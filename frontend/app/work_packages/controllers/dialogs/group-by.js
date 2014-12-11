@@ -31,13 +31,6 @@ module.exports = function($scope, $filter, groupingModal, QueryService, WorkPack
   this.name    = 'GroupBy';
   this.closeMe = groupingModal.deactivate;
 
-  $scope.getGroupableColumnsData = function(term, result) {
-    var filtered = $filter('filter')($scope.groupableColumnsData, { label: term }),
-        sorted = $filter('orderBy')(filtered, 'label');
-
-    return result(sorted);
-  };
-
   $scope.updateGroupBy = function(){
     QueryService.setGroupBy($scope.selectedGroupByData.id);
 
