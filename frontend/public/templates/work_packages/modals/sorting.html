@@ -7,17 +7,18 @@
     <form name="modalSortingForm">
       <div id="modal-sorting" class="modal-content-container">
         <div ng-repeat="element in sortElements">
-          <input type="hidden"
-                 ui-select2-sortable
-                 simple-query="getAvailableColumnsData"
-                 ng-model="element[0]"
-                 focus="$first"></input>
-          <input type="hidden"
-                 ui-select2-sortable
-                 simple-query="getDirectionsData"
-                 ng-model="element[1]"
-                 ng-required="element[0]"
-                 ng-disabled="!element[0]"></input>
+          <ui-select ng-model="element[1]" focus="$first">
+            <ui-select-match>{{$select.selected.name}}</ui-select-match>
+            <ui-select-choices repeat="column in getRemainingAvailableColumnsData()">
+            </ui-select-choices>
+          </ui-select>
+
+          <ui-select ng-model="element[1]" ng-required="element[0]" ng-disabled="!element[0]">
+            <ui-select-match>{{$select.selected}}</ui-select-match>
+            <ui-select-choices repeat="direction in availableDirectionsData">
+              {{direction}}
+            </ui-select-choices>
+          </ui-select>
         </div>
       </div>
 
