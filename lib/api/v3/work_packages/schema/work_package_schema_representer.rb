@@ -34,58 +34,19 @@ module API
   module V3
     module WorkPackages
       module Schema
-        class WorkPackageSchemaRepresenter < ::API::Decorators::Single
-          I18N_WORK_PACKAGE = 'activerecord.attributes.work_package'
-
-          def self.schema(property,
-                          type: nil,
-                          title: nil,
-                          required: true,
-                          writable: true,
-                          min_length: nil,
-                          max_length: nil)
-            raise ArgumentError if property.nil? || type.nil?
-
-            title = I18n.t("#{I18N_WORK_PACKAGE}.#{property}") unless title
-
-            schema = ::API::Decorators::PropertySchemaRepresenter.new(type: type,
-                                                                      name: title)
-            schema.required = required
-            schema.writable = writable
-            schema.min_length = min_length if min_length
-            schema.max_length = max_length if max_length
-
-            property property,
-                     getter: -> (*) { schema },
-                     writeable: false
+        class WorkPackageSchemaRepresenter < ::API::Decorators::Schema
+          def self.i18n_prefix
+            'activerecord.attributes.work_package'
           end
 
-          def self.schema_with_allowed_link(property,
-                                            type: nil,
-                                            title: nil,
-                                            href_callback: nil,
-                                            required: true,
-                                            writable: true)
-            raise ArgumentError if property.nil? || href_callback.nil?
+          def self.create(work_package_schema, context = {})
+            klass = Class.new(WorkPackageSchemaRepresenter)
+            injector = ::API::V3::Utilities::CustomFieldInjector.new(klass)
+            work_package_schema.available_custom_fields.each do |custom_field|
+              injector.inject_schema(custom_field)
+            end
 
-            type = property.to_s.camelize unless type
-            title = I18n.t("#{I18N_WORK_PACKAGE}.#{property}") unless title
-
-            property property,
-                     exec_context: :decorator,
-                     getter: -> (*) {
-                       representer = ::API::Decorators::AllowedValuesByLinkRepresenter.new(
-                         type: type,
-                         name: title)
-                       representer.required = required
-                       representer.writable = writable
-
-                       if represented.defines_assignable_values?
-                         representer.allowed_values_href = instance_eval(&href_callback)
-                       end
-
-                       representer
-                     }
+            klass.new(work_package_schema, context)
           end
 
           schema :_type,
@@ -129,7 +90,7 @@ module API
 
           schema :percentage_done,
                  type: 'Integer',
-                 title: I18n.t("#{I18N_WORK_PACKAGE}.done_ratio"),
+                 title: I18n.t("#{self.i18n_prefix}.done_ratio"),
                  writable: false
 
           schema :created_at,
@@ -154,7 +115,7 @@ module API
 
           schema_with_allowed_link :assignee,
                                    type: 'User',
-                                   title: I18n.t("#{I18N_WORK_PACKAGE}.assigned_to"),
+                                   title: I18n.t("#{i18n_prefix}.assigned_to"),
                                    required: false,
                                    href_callback: -> (*) {
                                      api_v3_paths.available_assignees(represented.project.id)
@@ -162,7 +123,7 @@ module API
 
           schema_with_allowed_link :responsible,
                                    type: 'User',
-                                   title: I18n.t("#{I18N_WORK_PACKAGE}.responsible"),
+                                   title: I18n.t("#{i18n_prefix}.responsible"),
                                    required: false,
                                    href_callback: -> (*) {
                                      api_v3_paths.available_responsibles(represented.project.id)
@@ -174,7 +135,7 @@ module API
                      assignable_statuses = represented.assignable_statuses_for(current_user)
                      representer = ::API::Decorators::AllowedValuesByCollectionRepresenter.new(
                        type: 'Status',
-                       name: I18n.t("#{I18N_WORK_PACKAGE}.status"),
+                       name: I18n.t("#{self.class.i18n_prefix}.status"),
                        current_user: current_user,
                        value_representer: API::V3::Statuses::StatusRepresenter,
                        link_factory: -> (status) {
@@ -196,7 +157,7 @@ module API
                    getter: -> (*) {
                      representer = ::API::Decorators::AllowedValuesByCollectionRepresenter.new(
                        type: 'Version',
-                       name: I18n.t("#{I18N_WORK_PACKAGE}.fixed_version"),
+                       name: I18n.t("#{self.class.i18n_prefix}.fixed_version"),
                        current_user: current_user,
                        value_representer: API::V3::Versions::VersionRepresenter,
                        link_factory: -> (version) {
@@ -220,7 +181,7 @@ module API
                    getter: -> (*) {
                      representer = ::API::Decorators::AllowedValuesByCollectionRepresenter.new(
                        type: 'Priority',
-                       name: I18n.t("#{I18N_WORK_PACKAGE}.priority"),
+                       name: I18n.t("#{self.class.i18n_prefix}.priority"),
                        current_user: current_user,
                        value_representer: API::V3::Priorities::PriorityRepresenter,
                        link_factory: -> (priority) {
